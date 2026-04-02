@@ -53,6 +53,21 @@ export default function ResultView({ extractedKeys = {}, userAnswers = {}, onRes
           </div>
         </div>
 
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button 
+            onClick={() => window.print()}
+            className="flex-1 bg-slate-800 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-900 shadow-lg"
+          >
+            <Download size={20} /> Download Scorecard
+          </button>
+          <button
+            onClick={onFeedback}
+            className="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg"
+          >
+            Send Feedback / Suggestion
+          </button>
+        </div>
+
         <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
           <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <h3 className="font-bold text-slate-800">Question Wise Analysis</h3>
@@ -105,20 +120,7 @@ export default function ResultView({ extractedKeys = {}, userAnswers = {}, onRes
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button 
-            onClick={() => window.print()}
-            className="flex-1 bg-slate-800 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-900 shadow-lg"
-          >
-            <Download size={20} /> Download Scorecard
-          </button>
-          <button
-            onClick={onFeedback}
-            className="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg"
-          >
-            Send Feedback / Suggestion
-          </button>
-        </div>
+        
       </div>
     </div>
   );

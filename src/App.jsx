@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import UploadView from './components/UploadView';
-import ExamView from './components/ExamView';
+import ExamView from './components/ExamViewOMR';
 import ResultView from './components/ResultView';
 import AnswerKeyPrompt from './components/AnswerKeyPrompt';
 import Home from './components/Home';
@@ -27,6 +27,7 @@ const App = () => {
   const [feedbackStatus, setFeedbackStatus] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [useOMR, setUseOMR] = useState(false);
 
   // PDF Viewer States
   const [pdfDoc, setPdfDoc] = useState(null);
@@ -73,20 +74,27 @@ const App = () => {
   }, [pdfScale, currentPage, pdfDoc]);
 
   const startExam = async () => {
-    if (!questionPdf) {
-      setErrorMessage('Please upload the Question Paper first.');
+    // Allow starting exam without a question PDF when useOMR is selected
+    if (!questionPdf && !useOMR) {
+      setErrorMessage('Please upload the Question Paper first or enable OMR-only mode.');
       return;
     }
     setLoading(true);
     try {
-      const pdfjs = await loadPdfJs();
-      const arrayBuffer = await questionPdf.arrayBuffer();
-      const doc = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-      setPdfDoc(doc);
+      if (questionPdf) {
+        const pdfjs = await loadPdfJs();
+        const arrayBuffer = await questionPdf.arrayBuffer();
+        const doc = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+        setPdfDoc(doc);
+        setTimeout(() => renderPage(1, doc), 100);
+      } else {
+        // OMR-only: clear any existing pdfDoc
+        setPdfDoc(null);
+      }
+
       setTimeLeft(Number(timerDuration) * 60);
       setIsTimerRunning(true);
       setView('exam');
-      setTimeout(() => renderPage(1, doc), 100);
     } catch (err) {
       setErrorMessage('Error loading PDF: ' + err.message);
     } finally {
@@ -214,6 +222,8 @@ const App = () => {
         startExam={startExam}
         loading={loading}
         errorMessage={errorMessage}
+        useOMR={useOMR}
+        setUseOMR={setUseOMR}
       />
     );
   }
@@ -254,6 +264,7 @@ const App = () => {
         timeLeft={timeLeft}
         setIsTimerRunning={setIsTimerRunning}
         openAnswerKeyUpload={openAnswerKeyUpload}
+        useOMR={useOMR}
         loading={loading}
         pdfScale={pdfScale}
         setPdfScale={setPdfScale}

@@ -12,6 +12,8 @@ export default function UploadView({
   startExam,
   loading,
   errorMessage,
+  useOMR,
+  setUseOMR,
 }) {
   const handleFile = (e) => {
     const file = e.target.files[0];
@@ -61,13 +63,20 @@ export default function UploadView({
                 <label className="text-[10px] text-slate-400 uppercase font-bold">Timer (Minutes)</label>
                 <input type="number" value={timerDuration} onChange={(e) => setTimerDuration(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
+              <div>
+                <label className="inline-flex items-center gap-2 text-sm text-slate-600">
+                  <input type="checkbox" checked={useOMR} onChange={(e) => setUseOMR(e.target.checked)} className="w-4 h-4" />
+                  Start OMR-only (no Question PDF)
+                </label>
+                <p className="text-xs text-slate-400 mt-1">When enabled, you can run the test without uploading a question PDF. After the test, upload the filled OMR sheet for verification.</p>
+              </div>
             </div>
           </div>
         </div>
 
         <button
           onClick={startExam}
-          disabled={loading || !questionPdf}
+          disabled={loading || (!questionPdf && !useOMR)}
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2"
         >
           {loading ? 'Initializing Simulator...' : 'Launch Test Environment'}
