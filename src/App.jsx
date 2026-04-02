@@ -4,6 +4,7 @@ import ExamView from './components/ExamView';
 import ResultView from './components/ResultView';
 import AnswerKeyPrompt from './components/AnswerKeyPrompt';
 import Home from './components/Home';
+import FeedbackView from './components/FeedbackView';
 
 // External Library Loaders
 const PDFJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
@@ -21,6 +22,9 @@ const App = () => {
   const [userAnswers, setUserAnswers] = useState({});
   const [markedForReview, setMarkedForReview] = useState({});
   const [extractedKeys, setExtractedKeys] = useState({});
+
+  const [feedback, setFeedback] = useState({ name: '', email: '', message: '' });
+  const [feedbackStatus, setFeedbackStatus] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -167,6 +171,35 @@ const App = () => {
     window.location.reload();
   };
 
+  const sendFeedback = () => {
+    if (!feedback.message.trim()) {
+      setFeedbackStatus('Please enter feedback or suggestions before sending.');
+      return;
+    }
+
+    const recipient = 'bandiprathap53@gmail.com';
+    const subject = encodeURIComponent('ExamSim Feedback / Suggestion');
+    const body = encodeURIComponent(
+      `Name: ${feedback.name || 'N/A'}\nEmail: ${feedback.email || 'N/A'}\n\nMessage:\n${feedback.message}`
+    );
+
+    // Try Gmail web compose in a new tab (best for Chrome users).
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${subject}&body=${body}`;
+    window.open(gmailUrl, '_blank');
+
+    // Fallback: mail client if Gmail web does not work in their environment.
+    const mailtoUrl = `mailto:${recipient}?subject=${subject}&body=${body}`;
+    setFeedbackStatus(
+      'Opening Gmail web compose in a new tab. If nothing opens, please click this link: ' +
+      mailtoUrl
+    );
+
+    // Optionally keep in-place mailto for browsers that don't support Gmail link.
+    // Note: do not automatically redirect to mailto to avoid losing current app state.
+    // Uncomment the next line if you want automatic fallback on same tab.
+    // window.location.href = mailtoUrl;
+  };
+
   const proceedToUpload = () => setView('upload');
 
   if (view === 'upload') {
@@ -186,7 +219,22 @@ const App = () => {
   }
 
   if (view === 'home') {
-    return <Home onProceed={proceedToUpload} />;
+    return <Home onProceed={proceedToUpload} onFeedback={() => setView('feedback')} />;
+  }
+
+  if (view === 'feedback') {
+    return (
+      <FeedbackView
+        feedback={feedback}
+        setFeedback={setFeedback}
+        sendFeedback={sendFeedback}
+        statusMessage={feedbackStatus}
+        onBack={() => {
+          setFeedbackStatus('');
+          setView('home');
+        }}
+      />
+    );
   }
 
   if (view === 'exam') {
@@ -221,7 +269,12 @@ const App = () => {
 
   if (view === 'result') {
     return (
-      <ResultView extractedKeys={extractedKeys} userAnswers={userAnswers} onRestart={onRestart} />
+      <ResultView
+        extractedKeys={extractedKeys}
+        userAnswers={userAnswers}
+        onRestart={onRestart}
+        onFeedback={() => setView('feedback')}
+      />
     );
   }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { CheckCircle, AlertCircle, Trophy, Download, Trash2 } from 'lucide-react';
 
-export default function ResultView({ extractedKeys = {}, userAnswers = {}, onRestart }) {
+export default function ResultView({ extractedKeys = {}, userAnswers = {}, onRestart, onFeedback }) {
   const stats = Object.keys(extractedKeys).reduce((acc, q) => {
     const correct = extractedKeys[q];
     const user = userAnswers[q];
@@ -105,12 +105,18 @@ export default function ResultView({ extractedKeys = {}, userAnswers = {}, onRes
           </div>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <button 
             onClick={() => window.print()}
             className="flex-1 bg-slate-800 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-900 shadow-lg"
           >
             <Download size={20} /> Download Scorecard
+          </button>
+          <button
+            onClick={onFeedback}
+            className="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg"
+          >
+            Send Feedback / Suggestion
           </button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Upload, Clock, FileCheck, ArrowRight, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
 
-export default function Home({ onProceed }) {
+export default function Home({ onProceed, onFeedback }) {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans">
       {/* Navigation / Header */}
@@ -131,8 +131,14 @@ export default function Home({ onProceed }) {
       </main>
 
       <footer className="border-t border-slate-200 py-10 bg-white">
-        <div className="max-w-6xl mx-auto px-6 text-center text-slate-400 text-sm">
+        <div className="max-w-6xl mx-auto px-6 text-center text-slate-400 text-sm space-y-2">
           <p>© {new Date().getFullYear()} ExamSim Pro Simulator. Built for aspirants by aspirants.</p>
+          <button
+            onClick={onFeedback}
+            className="text-blue-600 hover:text-blue-800 text-xs font-semibold underline"
+          >
+            Share feedback / suggestions
+          </button>
         </div>
       </footer>
     </div>
