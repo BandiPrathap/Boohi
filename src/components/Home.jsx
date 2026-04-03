@@ -155,38 +155,92 @@ export default function Home({ onProceed, onFeedback }) {
 
       {/* Start Instructions Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-          <div className="relative bg-white max-w-2xl w-full rounded-2xl shadow-2xl overflow-hidden mx-4">
-            <div className="p-6 border-b border-slate-100">
-              <h3 className="text-lg font-extrabold">Before you start — quick instructions</h3>
-              <p className="text-sm text-slate-500 mt-2">Please read these important notes before starting your test.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => setShowModal(false)} 
+          />
+          
+          {/* Modal Content */}
+          <div className="relative bg-white w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            
+            {/* Header */}
+            <div className="p-5 sm:p-6 border-b border-slate-100 flex-shrink-0">
+              <h3 className="text-xl font-bold text-slate-900">Before you start</h3>
+              <p className="text-sm text-slate-500 mt-1">Please review these notes to ensure a smooth testing experience.</p>
             </div>
-            <div className="p-6 space-y-4 text-sm text-slate-700">
-              <ul className="list-disc ml-5 space-y-2">
-                <li>Answers and progress (selected choices, marked-for-review, timer, current page, and settings) are auto-saved to your browser's local storage. Refreshing the page will generally restore your answers.</li>
-                <li>Uploaded PDF files (question paper or answer key) are not stored in localStorage and will not persist across refresh or closing the tab — you will need to re-upload them if you refresh or open the test in a new tab/window.</li>
-                <li>Avoid using private/incognito mode or clearing browser data during the test; that can cause localStorage to be unavailable and you may lose progress.</li>
-                <li>If you want a fresh start, use the Restart option on the results screen — it clears saved state before reloading.</li>
-                <li>When ready, check the box below to confirm you understand and then click Proceed to begin the test.</li>
-              </ul>
 
-              <div className="flex items-center gap-4 mt-3">
-                <label className="inline-flex items-center gap-2">
-                  <input type="checkbox" className="form-checkbox h-4 w-4" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
-                  <span className="text-sm text-slate-700">I have read and understood the instructions</span>
+            {/* Body (Scrollable) */}
+            <div className="p-5 sm:p-6 overflow-y-auto space-y-4">
+              <div className="grid gap-3">
+                {[
+                  { title: "Progress Auto-save", desc: "Your choices, timer, and marks are saved locally. Refreshing won't lose your progress." },
+                  { title: "PDF Persistence", desc: "Question papers are NOT stored. If you refresh, you must re-upload the PDF file." },
+                  { title: "Avoid Incognito", desc: "Private tabs or clearing browser data will delete your progress instantly." },
+                  { title: "Fresh Starts", desc: "Use the 'Restart' option on the results screen to clear all data for a new attempt." }
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold">
+                      {i + 1}
+                    </span>
+                    <p className="text-sm text-slate-700">
+                      <span className="font-semibold text-slate-900">{item.title}:</span> {item.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Checkboxes Section */}
+              <div className="pt-4 space-y-3">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <div className="relative flex items-center pt-0.5">
+                    <input 
+                      type="checkbox" 
+                      className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 transition-all cursor-pointer" 
+                      checked={confirmed} 
+                      onChange={(e) => setConfirmed(e.target.checked)} 
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">
+                    I have read and understood the instructions
+                  </span>
                 </label>
-                <label className="inline-flex items-center gap-2 ml-4 text-sm text-slate-500">
-                  <input type="checkbox" className="form-checkbox h-4 w-4" checked={dontShowAgain} onChange={(e) => setDontShowAgain(e.target.checked)} />
-                  <span>Don't show this again on this device</span>
+
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <div className="relative flex items-center pt-0.5">
+                    <input 
+                      type="checkbox" 
+                      className="w-5 h-5 rounded border-slate-300 text-slate-400 focus:ring-slate-500 transition-all cursor-pointer" 
+                      checked={dontShowAgain} 
+                      onChange={(e) => setDontShowAgain(e.target.checked)} 
+                    />
+                  </div>
+                  <span className="text-sm text-slate-500 group-hover:text-slate-700 transition-colors">
+                    Don't show this again on this device
+                  </span>
                 </label>
               </div>
             </div>
 
-            <div className="p-4 border-t bg-slate-50 flex items-center justify-end gap-3">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-lg text-sm">Cancel</button>
-              <button onClick={handleProceed} disabled={!confirmed} className={`px-4 py-2 rounded-lg font-bold text-white ${confirmed ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-300 cursor-not-allowed'}`}>
-                Proceed
+            {/* Footer */}
+            <div className="p-4 sm:p-5 border-t bg-slate-50 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 flex-shrink-0">
+              <button 
+                onClick={() => setShowModal(false)} 
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleProceed} 
+                disabled={!confirmed} 
+                className={`w-full sm:w-auto px-8 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-blue-200 transition-all active:scale-95 ${
+                  confirmed 
+                  ? 'bg-blue-600 hover:bg-blue-700' 
+                  : 'bg-slate-300 cursor-not-allowed shadow-none'
+                }`}
+              >
+                Proceed to Test
               </button>
             </div>
           </div>
