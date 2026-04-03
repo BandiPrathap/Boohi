@@ -2,13 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import UploadView from './components/UploadView';
 import ExamView from './components/ExamViewOMR';
 import ResultView from './components/ResultView';
-import AnswerKeyPrompt from './components/AnswerKeyPrompt';
 import Home from './components/Home';
 import FeedbackView from './components/FeedbackView';
 
 // External Library Loaders
 const PDFJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
 const PDFJS_WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// Local storage key for preserving exam state across reloads
+const STORAGE_KEY = 'boohi_state_v1';
+
+function safeParse(json) {
+  try { return JSON.parse(json); } catch (e) { return null; }
+}
 
 const App = () => {
   const [view, setView] = useState('home'); // home | upload | exam | uploadKey | result
@@ -18,6 +24,7 @@ const App = () => {
   const [timerDuration, setTimerDuration] = useState(120); // minutes
   const [timeLeft, setTimeLeft] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
 
   const [userAnswers, setUserAnswers] = useState({});
   const [markedForReview, setMarkedForReview] = useState({});
@@ -34,6 +41,47 @@ const App = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pdfScale, setPdfScale] = useState(1.5);
   const canvasRef = useRef(null);
+
+  // Rehydrate saved state from localStorage (if any)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const data = safeParse(raw);
+      if (!data) return;
+
+      if (data.userAnswers) setUserAnswers(data.userAnswers);
+      if (data.markedForReview) setMarkedForReview(data.markedForReview);
+      if (typeof data.timeLeft === 'number') setTimeLeft(data.timeLeft);
+      if (typeof data.currentPage === 'number') setCurrentPage(data.currentPage);
+      if (typeof data.pdfScale === 'number') setPdfScale(data.pdfScale);
+      if (typeof data.numQuestions === 'number') setNumQuestions(data.numQuestions);
+      if (typeof data.useOMR === 'boolean') setUseOMR(data.useOMR);
+      if (data.view) setView(data.view);
+      // NOTE: We cannot rehydrate File objects (questionPdf/answerKeyPdf) from localStorage.
+    } catch (err) {
+      // ignore parse errors
+      // console.warn('Failed to restore state', err);
+    }
+  }, []);
+
+  // Persist selected pieces of app state to localStorage on change
+  useEffect(() => {
+    try {
+      const payload = {
+        userAnswers,
+        markedForReview,
+        timeLeft,
+        currentPage,
+        pdfScale,
+        numQuestions: Number(numQuestions),
+        useOMR,
+        view,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch (err) {
+      // ignore write errors (e.g., storage full or private mode)
+    }
+  }, [userAnswers, markedForReview, timeLeft, currentPage, pdfScale, numQuestions, useOMR, view]);
 
   const loadPdfJs = async () => {
     if (window.pdfjsLib) return window.pdfjsLib;
@@ -94,6 +142,7 @@ const App = () => {
 
       setTimeLeft(Number(timerDuration) * 60);
       setIsTimerRunning(true);
+  setTimedOut(false);
       setView('exam');
     } catch (err) {
       setErrorMessage('Error loading PDF: ' + err.message);
@@ -157,13 +206,9 @@ const App = () => {
     if (isTimerRunning && timeLeft > 0) {
       timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     } else if (timeLeft === 0 && isTimerRunning) {
-      // Timer expired: stop timer, move to answer-key upload page and disable edits
+      // Timer expired: stop timer and signal the exam view to show the submit/upload overlay.
       setIsTimerRunning(false);
-      if (view === 'exam') {
-        // show upload prompt; if answerKeyPdf already present, process it
-        setView('uploadKey');
-        if (answerKeyPdf) extractFromFile(answerKeyPdf);
-      }
+      setTimedOut(true);
     }
     return () => clearInterval(timer);
   }, [isTimerRunning, timeLeft, view, answerKeyPdf]);
@@ -176,6 +221,8 @@ const App = () => {
   };
 
   const onRestart = () => {
+    // clear saved exam state before reloading
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
     window.location.reload();
   };
 
@@ -263,6 +310,7 @@ const App = () => {
         formatTime={formatTime}
         timeLeft={timeLeft}
         setIsTimerRunning={setIsTimerRunning}
+        timedOut={timedOut}
         openAnswerKeyUpload={openAnswerKeyUpload}
         useOMR={useOMR}
         loading={loading}

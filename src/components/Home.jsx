@@ -1,7 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, Clock, FileCheck, ArrowRight, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
 
 export default function Home({ onProceed, onFeedback }) {
+  const [showModal, setShowModal] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('boohi_ack_instructions_v1');
+      if (saved === 'true') setDontShowAgain(true);
+    } catch (e) {}
+  }, []);
+
+  const openStartFlow = () => {
+    // If user previously chose to skip modal, proceed immediately
+    if (dontShowAgain) return onProceed();
+    setShowModal(true);
+  };
+
+  const handleProceed = () => {
+    if (!confirmed) return; // safety: require checkbox
+    try { localStorage.setItem('boohi_ack_instructions_v1', dontShowAgain ? 'true' : 'false'); } catch (e) {}
+    setShowModal(false);
+    onProceed();
+  };
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans">
       {/* Navigation / Header */}
@@ -11,10 +34,10 @@ export default function Home({ onProceed, onFeedback }) {
             <div className="bg-blue-600 p-1.5 rounded-lg">
               <ShieldCheck className="text-white w-6 h-6" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-slate-800">ExamSim <span className="text-blue-600">Pro</span></span>
+            <span className="text-xl font-bold tracking-tight text-slate-800">Roo<span className="text-blue-600">HI</span></span>
           </div>
           <button 
-            onClick={onProceed}
+            onClick={openStartFlow}
             className="hidden md:flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-full text-sm font-medium transition-all"
           >
             Start Mock Test
@@ -36,7 +59,7 @@ export default function Home({ onProceed, onFeedback }) {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button 
-              onClick={onProceed}
+                onClick={openStartFlow}
               className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold px-10 py-4 rounded-2xl shadow-xl shadow-blue-200 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
             >
               Get Started Now <ArrowRight className="w-5 h-5" />
@@ -63,7 +86,7 @@ export default function Home({ onProceed, onFeedback }) {
               <p className="text-slate-500 leading-relaxed">
                 Drag and drop your question paper. We support searchable PDFs to ensure high-quality rendering during your test.
               </p>
-              {/* Visual Asset Placeholder */}
+              {/* Visual Asset Placeholder
               <div className="mt-6 h-32 bg-slate-50 rounded-xl border border-dashed border-slate-300 flex items-center justify-center">
                 <svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="20" y="10" width="80" height="40" rx="4" fill="white" stroke="#E2E8F0" />
@@ -71,7 +94,7 @@ export default function Home({ onProceed, onFeedback }) {
                   <rect x="30" y="28" width="60" height="4" rx="2" fill="#E2E8F0" />
                   <circle cx="90" cy="20" r="4" fill="#3B82F6" opacity="0.4" />
                 </svg>
-              </div>
+              </div> */}
             </div>
 
             {/* Step 2 */}
@@ -83,13 +106,13 @@ export default function Home({ onProceed, onFeedback }) {
               <p className="text-slate-500 leading-relaxed">
                 A digital OMR panel syncs with your PDF view. Timed sessions help you build the speed needed for real Govt exams.
               </p>
-              {/* Visual Asset Placeholder */}
+              {/* Visual Asset Placeholder
               <div className="mt-6 h-32 bg-slate-50 rounded-xl border border-slate-200 flex flex-col items-center justify-center gap-2">
                 <div className="flex gap-2">
                    {[1,2,3].map(i => <div key={i} className="w-6 h-6 rounded-full border-2 border-indigo-200 flex items-center justify-center text-[10px] text-indigo-300">{i}</div>)}
                 </div>
                 <div className="w-20 h-4 bg-indigo-100 rounded-full animate-pulse"></div>
-              </div>
+              </div> */}
             </div>
 
             {/* Step 3 */}
@@ -101,13 +124,13 @@ export default function Home({ onProceed, onFeedback }) {
               <p className="text-slate-500 leading-relaxed">
                 Upload the answer key in any text format. We instantly calculate your score, negative marking, and accuracy.
               </p>
-              {/* Visual Asset Placeholder */}
+              {/* Visual Asset Placeholder
               <div className="mt-6 h-32 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-center">
                 <div className="text-center">
                   <div className="text-2xl font-black text-emerald-600">84%</div>
                   <div className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Score Card</div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -122,13 +145,53 @@ export default function Home({ onProceed, onFeedback }) {
             Experience the most realistic govt exam interface available online. No distractions, just focus.
           </p>
           <button 
-            onClick={onProceed}
+            onClick={openStartFlow}
             className="bg-white hover:bg-slate-100 text-slate-900 px-8 py-3 rounded-xl font-bold transition-all relative z-1"
           >
             Start Now — It's Free
           </button>
         </section>
       </main>
+
+      {/* Start Instructions Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)} />
+          <div className="relative bg-white max-w-2xl w-full rounded-2xl shadow-2xl overflow-hidden mx-4">
+            <div className="p-6 border-b border-slate-100">
+              <h3 className="text-lg font-extrabold">Before you start — quick instructions</h3>
+              <p className="text-sm text-slate-500 mt-2">Please read these important notes before starting your test.</p>
+            </div>
+            <div className="p-6 space-y-4 text-sm text-slate-700">
+              <ul className="list-disc ml-5 space-y-2">
+                <li>Answers and progress (selected choices, marked-for-review, timer, current page, and settings) are auto-saved to your browser's local storage. Refreshing the page will generally restore your answers.</li>
+                <li>Uploaded PDF files (question paper or answer key) are not stored in localStorage and will not persist across refresh or closing the tab — you will need to re-upload them if you refresh or open the test in a new tab/window.</li>
+                <li>Avoid using private/incognito mode or clearing browser data during the test; that can cause localStorage to be unavailable and you may lose progress.</li>
+                <li>If you want a fresh start, use the Restart option on the results screen — it clears saved state before reloading.</li>
+                <li>When ready, check the box below to confirm you understand and then click Proceed to begin the test.</li>
+              </ul>
+
+              <div className="flex items-center gap-4 mt-3">
+                <label className="inline-flex items-center gap-2">
+                  <input type="checkbox" className="form-checkbox h-4 w-4" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
+                  <span className="text-sm text-slate-700">I have read and understood the instructions</span>
+                </label>
+                <label className="inline-flex items-center gap-2 ml-4 text-sm text-slate-500">
+                  <input type="checkbox" className="form-checkbox h-4 w-4" checked={dontShowAgain} onChange={(e) => setDontShowAgain(e.target.checked)} />
+                  <span>Don't show this again on this device</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="p-4 border-t bg-slate-50 flex items-center justify-end gap-3">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-lg text-sm">Cancel</button>
+              <button onClick={handleProceed} disabled={!confirmed} className={`px-4 py-2 rounded-lg font-bold text-white ${confirmed ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-300 cursor-not-allowed'}`}>
+                Proceed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <footer className="border-t border-slate-200 py-10 bg-white">
         <div className="max-w-6xl mx-auto px-6 text-center text-slate-400 text-sm space-y-2">

@@ -46,6 +46,7 @@ export default function ExamViewOMR({
   formatTime,
   timeLeft,
   setIsTimerRunning,
+  timedOut = false,
   openAnswerKeyUpload,
   pdfScale,
   setPdfScale,
@@ -66,6 +67,13 @@ export default function ExamViewOMR({
       handleFinalSubmit();
     }
   }, [timeLeft, isTestSubmitted]);
+
+  // If the parent signals a timeout, trigger the same submit flow as clicking Submit
+  useEffect(() => {
+    if (timedOut && !isTestSubmitted) {
+      handleFinalSubmit();
+    }
+  }, [timedOut]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -196,8 +204,8 @@ export default function ExamViewOMR({
       <header className={`h-16 border-b flex items-center justify-between px-6 shrink-0 z-50 transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 border-slate-800 shadow-[0_1px_10px_rgba(0,0,0,0.3)]' : 'bg-white border-slate-200 shadow-[0_1px_10px_rgba(0,0,0,0.05)]'}`}>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white text-sm shadow-md shadow-indigo-500/20">E</div>
-            <h2 className="font-black text-lg hidden lg:block tracking-tight uppercase">ExamConsole</h2>
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white text-sm shadow-md shadow-indigo-500/20">R</div>
+            <h2 className="font-black text-lg hidden lg:block tracking-tight uppercase">Roohi Console</h2>
           </div>
           
           <div className={`flex items-center gap-2.5 px-4 py-1.5 rounded-full border shadow-sm transition-all ${timeLeft < 300 ? 'bg-rose-500/10 border-rose-500/30 text-rose-500 animate-pulse' : isDarkMode ? 'bg-slate-800 border-slate-700 text-indigo-400 font-bold' : 'bg-slate-50 border-slate-200 text-indigo-600 font-bold'}`}>
